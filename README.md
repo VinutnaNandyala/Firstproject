@@ -1,2 +1,2 @@
 # Firstproject
-This is my forst repository in github for practice
+This is my first repository in github for practice
