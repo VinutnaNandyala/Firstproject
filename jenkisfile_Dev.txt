@@ -1,0 +1,189 @@
+pipeline
+  {
+    
+   agent any
+    
+  
+     environment {
+
+    //    msbuildemitsolution=1
+
+  RECIPIENT_LIST="${RECIPIENT_LIST}"
+}
+
+
+     stages {
+
+        stage('notify'){
+
+             steps{
+
+                 
+          notifyStarted()
+
+             }
+ 
+        }
+
+          stage('checkout latest From TFS') {
+ 
+          steps {
+
+               
+       // build(job: 'TFS_job', propagate: false)
+
+               deleteDir()
+
+          //checkout( [$class: 'TeamFoundationServerScm', credentialsConfigurer: [$class: 'AutomaticCredentialsConfigurer'], projectPath: '$/DFSSACommission/Working/Concierge UI/', serverUrl: 'https://cygnus.cognizant.com/tfs/dfsventuresingaporeptelimited', useOverwrite: true, useUpdate: true, workspaceName: 'Hudson-${JOB_NAME}-${NODE_NAME}'] )
+
+                }
+
+        }
+
+        stage('copy file from TFS_job to Pipeline_job'){
+
+           steps{
+
+              powershell 'Copy-Item -Path "C:\\Program Files (x86)\\Jenkins\\workspace\\ConciergeUI_TFS_DEVjob\\*" -Recurse -Destination "C:\\Program Files (x86)\\Jenkins\\workspace\\ConciergeUI_Pipeline_dev1\\" -Force'
+
+           }
+
+        }
+
+        
+       stage('cleaning target directory'){
+
+         steps{
+
+          powershell 'Remove-Item C:\\TFS_Jenkins\\Output_DEV\\_PublishedWebsites\\LoyalTPL\\* -Recurse -Force'
+
+         }
+ 
+      }
+ 
+      stage('App_Build'){
+
+            steps{
+
+             bat "\"${tool 'MSBuild'}\" %Loyal T Concierge.sln% /t:rebuild /p:Configuration=Release /p:DebugSymbols=false /p:DebugType=None /p:PrecompilerBeforePublish=false /p:outdir=C:\\TFS_Jenkins\\Output_DEV\\"
+
+                    
+           }
+
+       }
+
+      stage('Web transformation') {
+
+           steps{
+
+           powershell returnStatus: true, script: 'C:\\TFS_Jenkins\\powershell\\Webdev.ps1'
+
+           powershell 'Copy-Item -Path C:\\TFS_Jenkins\\Output_DEV\\_PublishedWebsites\\Tranform\\web.config  -Destination C:\\TFS_Jenkins\\Output_DEV\\_PublishedWebsites\\LoyalTPL\\'
+
+       }
+
+      }
+
+       stage('cleanup webconfig folder'){
+
+           steps{
+     powershell 'Remove-Item -Path C:\\TFS_Jenkins\\Output_DEV\\_PublishedWebsites\\Tranform\\* -Recurse -Force'
+
+           }
+
+       }
+
+       
+       stage('Take backup on remote server'){
+
+           steps{
+
+              powershell returnStatus: true, script: 'C:\\TFS_Jenkins\\powershell\\Dev_backup.ps1'
+ 
+           }
+
+       }
+ 
+       
+       stage('Deployment to Dev server'){
+
+          steps{
+
+              
+  powershell returnStatus: true, script: 'C:\\TFS_Jenkins\\powershell\\Dev_Deploy.ps1'
+
+          }
+
+        } 
+
+          
+       
+}
+
+   
+post{
+
+       
+      success {
+
+         // bat "C:\\powershell\\label.bat"
+
+            notifySuccessful()
+
+            build job: 'ConciergeUI_label_job', propagate: false
+
+            
+        }
+
+        failure {
+
+            notifyFailed()
+
+        }
+
+   }
+ 
+}
+ 
+  
+   def notifyStarted()
+ {
+
+        emailext ( 
+       subject: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'", 
+       body: """<p>STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+         <p>Check console output at "<a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>"</p>""",
+        to: '$DEFAULT_RECIPIENTS'
+      // recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+     )
+
+ }
+ 
+def notifySuccessful()
+ {
+      emailext (
+       subject: "Jenkins Build: '${currentBuild.currentResult}: Job [${env.JOB_NAME}]'",
+       //subject: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+       body: """<p>SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+         <p>Check console output at "<a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>"</p>
+         <p>Please check website is up or not. If webpage is not open please trigger build for rollback deployment at "<a href="${env.JENKINS_URL}"> rollback </a>"</p> """ ,
+         to: '$DEFAULT_RECIPIENTS'
+        // recipientProviders: [[$class: 'RequesterRecipientProvider']],
+        
+     )
+
+ }
+ 
+def notifyFailed() 
+{
+
+      emailext (
+       subject: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
+       body: """<p>FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
+         <p>Check console output at "<a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>"</p>""",
+         to: '$DEFAULT_RECIPIENTS'
+      // recipientProviders: [[$class: 'DevelopersRecipientProvider'], [$class: 'RequesterRecipientProvider']]
+     )
+
+ } 
+
