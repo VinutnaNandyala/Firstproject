@@ -1,0 +1,42 @@
+Containerization of Spring Boot based Microservices using Docker and Managing the Docker images using Amazon Elastic Container Registry (ECR)
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+1. Create the Docker file and place it under the project roor folder.
+FROM java:8
+VOLUME /tmp
+ARG JAR_FILE=target/supplier-api-0.0.1-SNAPSHOT.jar
+ADD ${JAR_FILE} app.jar
+EXPOSE 8080
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
+
+2. Build docker image using Maven plugin. Run the below command in Linux VM
+mvn package dockerfile:build
+
+3. If build is successful, you should see the docker image created. To see the list of Docker images created, run the below command
+docker images
+
+4. If you need to remove the docker images, 
+4.1. Run the below command to get the running docker containers with <container_id>
+docker ps -a
+4.2. Run the below command to stop the running container before it can be removed.
+docker stop <container_id>
+4.3. Run the below command to remove the docker process
+docker rm <container_id>
+4.4. Run the below command to remove the docker image once the docker process is stopped and removed
+docker rmi <image_id>
+
+5. Push the docker image to the docker registry
+mvn dockerfile:push
+Note: 
+5.1. If [ERROR] no basic auth credentials, then run the below command to get the docker login information that can be used. 
+aws ecr get-login
+5.2. If no repository is created earlier, first create one using AWS console or AWS CLI command. Run the below command to create repo.
+aws ecr create-repository --repository-name <repo-name>
+
+6. Login to AWS console to verify if the image is uploaded successfully.
+
+7. Run the below command to run the docker image from within VM
+docker run -p 8080:8080 649771780791.dkr.ecr.us-east-2.amazonaws.com/supplier-api:latest
+docker run -d -p 8080:8080 649771780791.dkr.ecr.us-east-2.amazonaws.com/supplier-api:latest (Detached Mode)
+
+
