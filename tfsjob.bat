@@ -1,0 +1,6 @@
+cd "C:\Program Files (x86)\Jenkins\workspace\TFS_cmd"
+"C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\tf.exe" workspaces -format:brief -server:https://cygnus.cognizant.com/tfs/dfsventuresingaporeptelimited
+"C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\tf.exe" workspace -delete Hudson-TFS_cmd-MASTER;cts\804175 -noprompt -server:https://cygnus.cognizant.com/tfs/dfsventuresingaporeptelimited
+"C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\tf.exe" workspace -new Hudson-TFS_cmd-MASTER;cts\804175 -noprompt -server:https://cygnus.cognizant.com/tfs/dfsventuresingaporeptelimited
+"C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\tf.exe" workfold "$/DFSSACommission/Working/Concierge UI-Dev branch/" "C:\Program Files (x86)\Jenkins\workspace\TFS_cmd" /map /login:cts\804175,vinuthna@35cse /collection:https://cygnus.cognizant.com/tfs/dfsventuresingaporeptelimited /workspace:"Hudson-TFS_cmd-MASTER"
+"C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\tf.exe" get . -recursive -version:C3745 -noprompt /login:cts\804175,vinuthna@35cse

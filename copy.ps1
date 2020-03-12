@@ -1,0 +1,1 @@
+Copy-Item -Path "C:\Program Files (x86)\Jenkins\workspace\TFS_DEVjob\*" -Recurse -Destination "C:\Program Files (x86)\Jenkins\workspace\freejob_check\" -Force

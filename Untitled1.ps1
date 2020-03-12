@@ -1,0 +1,1 @@
+﻿Remove-Item -Path C:\Output_DEV\_PublishedWebsites\Tranform\* -Recurse -Force

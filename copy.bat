@@ -1,0 +1,1 @@
+xcopy C:\TFS_Jenkins\Output_DEV\_PublishedWebsites\LoyalTPL\* \\10.176.35.146\d$\publish /s 

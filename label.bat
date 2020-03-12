@@ -1,0 +1,2 @@
+cd C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE
+tf label R_%BUILD_NUMBER%  @"$/DFSSACommission/Working/Concierge UI-Dev branch/Publish/LoyalTPL/" /collection:https://cygnus.cognizant.com/tfs/dfsventuresingaporeptelimited /login:cts\804175,vinuthna@35cse
